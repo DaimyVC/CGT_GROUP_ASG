@@ -49,6 +49,11 @@ def greedy(qtable,state):
     return action
 
 def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma, alfa, adecay):
+    # Keep: False
+    # Update: True 
+    status_per_agent = {a: True for a in env.possible_agents}
+    a_update_per_agent = {a: None for a in env.possible_agents}
+    prev_action_per_agent = a_update_per_agent = {a: None for a in env.possible_agents}
     counts=make_CountTables(env)
     for _ in range(n_train_ep):
         print("-----------------------------------------")
@@ -63,17 +68,48 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
                 state=observations[agent]["state"]
                 qtable=qtables[env.agent_name_mapping[agent]]
                 if not terminations[agent]:
-                    actions.update({agent : epsilon_greedy(env,qtable,tuple(state),epsilon)})
-                    counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]+=1
+                    
+                    ## Change action when on update mode otherwise keep the same as previous
+
+                    if status_per_agent[agent]:
+                        actions.update({agent : epsilon_greedy(env,qtable,tuple(state),epsilon)})
+                        counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]+=1
+                    else:
+                        actions[agent] = prev_action_per_agent[agent]
+                prev_action_per_agent[agent] = actions[agent]
+
+
             new_observations, rewards, terminations, _, _ = env.step(actions)
             for agent in env.possible_agents:
                 new_state=new_observations[agent]["state"]
                 if(actions[agent]!=None):
-                    qtable=qtables[env.agent_name_mapping[agent]]
-                    count=counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]
-                    learning_rate=alfa/(1+adecay*count)
-                    qtable=update_QTables(tuple(state),actions[agent],rewards[agent],tuple(new_state),qtable,learning_rate,gamma)
-                    qtables[env.agent_name_mapping[agent]]=qtable
+                    
+                    if status_per_agent[agent]:
+                        # Save previous state for next iteration
+                        if actions[agent] != prev_action_per_agent[agent]:
+                            status_per_agent[agent] = False
+                            a_update_per_agent[agent] = state
+                        # Update with new state 
+                        else: 
+                            status_per_agent[agent] = True
+                            qtable=qtables[env.agent_name_mapping[agent]]
+                            count=counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]
+                            learning_rate=alfa/(1+adecay*count)
+                            qtable=update_QTables(tuple(state),actions[agent],rewards[agent],tuple(new_state),qtable,learning_rate,gamma)
+                            qtables[env.agent_name_mapping[agent]]=qtable
+                    #Re-use old state and give agents time to respond to action change
+                    else:
+                        qtable=qtables[env.agent_name_mapping[agent]]
+                        count=counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]
+                        learning_rate=alfa/(1+adecay*count)
+                        prev_state = tuple(a_update_per_agent[agent])
+                        qtable=update_QTables(prev_state,actions[agent],rewards[agent],tuple(new_state),qtable,learning_rate,gamma)
+                        qtables[env.agent_name_mapping[agent]]=qtable
+
+
+
+
+                    
             if len(env.agents)==0:
                 break
             

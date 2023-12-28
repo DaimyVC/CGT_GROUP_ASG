@@ -1,6 +1,18 @@
 from extended_pd import parallel_env
 import numpy as np
 import random
+from tqdm import tqdm
+
+
+def makeEmptyTables(env):
+    actions=env.action_space().n
+    states=env.observation_space().n
+    q_dim = tuple(states for _ in env.possible_agents)
+    empty_table=np.zeros(q_dim + tuple([actions]))
+    empty_tables = [empty_table.copy() for _ in env.possible_agents]
+    return empty_tables
+    
+
 
 def make_QTables(env,gamma):
     actions=env.action_space().n
@@ -11,6 +23,7 @@ def make_QTables(env,gamma):
     qtables =[qtable.copy() for _ in env.possible_agents]
     return qtables
 
+
 def make_CountTables(env):
     actions=env.action_space().n
     states=env.observation_space().n
@@ -18,6 +31,18 @@ def make_CountTables(env):
     count=np.zeros((beginq+tuple([actions])))
     counts =[count.copy() for _ in env.possible_agents]
     return counts
+
+
+def update_PTables(state,action,ptable,reward,lamb):
+    idx = state+tuple([action])
+    ptable[idx] = (1-lamb)*ptable[idx] + reward*lamb
+    return ptable
+ 
+def update_STables(state,action,stable,abs_difference_reward,lamb):
+    idx = state+tuple([action])
+    stable[idx] = (1-lamb)*stable[idx] + abs_difference_reward*lamb
+    return stable
+ 
 
 def update_QTables(state,action,reward,new_state,qtable,alfa,gamma):
     qtable[state+tuple([action])] = (1-alfa)*qtable[state+tuple([action])] + alfa*(reward+gamma*np.max(qtable[new_state]))
@@ -48,10 +73,10 @@ def greedy(qtable,state):
         action= np.argmax(qtable[state],-1)
     return action
 
-def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma, alfa, adecay):
+def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,ptables,stables,gamma, alfa, adecay):
     counts=make_CountTables(env)
-    for _ in range(n_train_ep):
-        print("-----------------------------------------")
+    for _ in tqdm(range(n_train_ep)):
+        # print("-----------------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         for agent in env.agents:  
@@ -67,13 +92,38 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
                     counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]+=1
             new_observations, rewards, terminations, _, _ = env.step(actions)
             for agent in env.possible_agents:
+                ptable = ptables[env.agent_name_mapping[agent]]
+                stable = stables[env.agent_name_mapping[agent]]
+                qtable = qtables[env.agent_name_mapping[agent]]
                 new_state=new_observations[agent]["state"]
                 if(actions[agent]!=None):
-                    qtable=qtables[env.agent_name_mapping[agent]]
                     count=counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]
-                    learning_rate=alfa/(1+adecay*count)
+                    # learning_rate=alfa/(1+adecay*count)
+                    reward = rewards[agent]
+                    action = actions[agent]
+                    abs_difference = abs(reward - ptable[tuple(state)+tuple([action])])
+                    alfa_non_stationary = alfa
+                    alfa_stationary = 4*alfa
+                    if abs_difference > stable[tuple(state)+tuple([action])]:
+                       learning_rate = alfa_non_stationary/(1+adecay*count)
+                    else:
+                       learning_rate = alfa_stationary/(1+adecay*count)
+                    
+                    lamb = 0.1 
+                    ptable = update_PTables(tuple(state),actions[agent],ptable,rewards[agent],lamb)
+                    stable = update_STables(tuple(state),actions[agent],stable,abs_difference,lamb)
                     qtable=update_QTables(tuple(state),actions[agent],rewards[agent],tuple(new_state),qtable,learning_rate,gamma)
+
+                    ptables[env.agent_name_mapping[agent]]=ptable
+                    stables[env.agent_name_mapping[agent]]=stable
                     qtables[env.agent_name_mapping[agent]]=qtable
+
+
+
+
+
+
+
             if len(env.agents)==0:
                 break
             
@@ -84,8 +134,8 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
 
 def evaluate(env, max_steps, n_eval_ep, qtables):
     ep_rewards=[]
-    for _ in range(n_eval_ep):
-        print("-----------------------------------")
+    for _ in tqdm(range(n_eval_ep)):
+        # print("-----------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         total_rewards_ep={agent : 0 for agent in env.possible_agents}
@@ -109,7 +159,7 @@ def evaluate(env, max_steps, n_eval_ep, qtables):
             if len(env.agents)==0:
                 break
             observations=new_observations
-        ep_rewards.append(list(total_rewards_ep.values()))
+        ep_rewards.append(list(total_rewards_ep.values())) 
     mean_reward = np.mean(ep_rewards,axis=0)
     std_reward = np.std(ep_rewards,axis=0)
     return mean_reward, std_reward
@@ -120,11 +170,19 @@ for _ in range(1):
     adecay=0.0001
     env = parallel_env()
     observations, infos = env.reset()
-    qtables = make_QTables(env,gamma)
-    qtables = train(env,10000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+    qtables = make_QTables(env,gamma) 
+    stables = makeEmptyTables(env)
+    ptables = makeEmptyTables(env)
+    qtables = train(env,10000,0,0.2,0.000006,100,qtables,ptables,stables,gamma,alfa,adecay)
     mean_reward, std_reward = evaluate(env, 100, 100, qtables)
+    print("qtables")
+    print(qtables)
+    # print("ptables")
+    # print(ptables)
+    # print("stables")
+    # print(stables)
     print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
     print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")
     print(f"Mean_reward={mean_reward[2]:.2f} +/- {std_reward[2]:.2f}")
-    print(qtables)
+
     break

@@ -110,6 +110,7 @@ class parallel_env(ParallelEnv):
         hands that are played.
         Returns the observations for each agent
         """
+        self.a_update = None 
         self.num_moves=0
         self.agents = self.possible_agents[:]
         self.agent_utility =[self.utility_per_agent for _ in self.possible_agents]

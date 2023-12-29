@@ -216,7 +216,7 @@ for _ in range(1):
     qtables = make_QTables(env,gamma)
     stables = makeEmptyTables(env)
     ptables = makeEmptyTables(env)
-    qtables = train(env,100,0,0.2,0.000006,100,qtables,ptables,stables,gamma,alfa,adecay,lamb)
+    qtables = train(env,10000,0,0.2,0.000006,100,qtables,ptables,stables,gamma,alfa,adecay,lamb)
     mean_reward, std_reward = evaluate(env, 100, 100, qtables)
     print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
     print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")

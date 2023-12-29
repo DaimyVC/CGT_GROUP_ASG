@@ -50,12 +50,15 @@ def greedy(qtable,state):
 
 def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma, alfa, adecay):
     counts=make_CountTables(env)
+    ep_rewards=[] #ADDED
     for _ in range(n_train_ep):
-        print("-----------------------------------------")
+        # print("-----------------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
+        total_rewards_ep={agent : 0 for agent in env.possible_agents} #ADDED
         for agent in env.agents:  
             actions[agent]=env.action_space().sample()
+            total_rewards_ep[agent]+=rewards[agent] #ADDED
         observations, rewards, terminations, _, _ = env.step(actions)
         for _ in range(max_steps):
             actions={agent : None for agent in env.possible_agents}
@@ -74,18 +77,25 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
                     learning_rate=alfa/(1+adecay*count)
                     qtable=update_QTables(tuple(state),actions[agent],rewards[agent],tuple(new_state),qtable,learning_rate,gamma)
                     qtables[env.agent_name_mapping[agent]]=qtable
+                    total_rewards_ep[agent]+=rewards[agent] #ADDED
             if len(env.agents)==0:
                 break
-            
             # Our state is the new state
             observations = new_observations
+        ep_rewards.append(list(total_rewards_ep.values())) #ADDED
+        # ep_rewards += [np.mean(list(total_rewards_ep.values()))]
         epsilon=max(epsilon-decay, min_epsilon)
-    return qtables
+    #mean_reward = np.mean(ep_rewards,axis=0) #ADDED
+    #std_reward = np.std(ep_rewards,axis=0) #ADDED
+
+    #print(mean_reward)
+    #print (std_reward)
+    return ep_rewards
 
 def evaluate(env, max_steps, n_eval_ep, qtables):
     ep_rewards=[]
     for _ in range(n_eval_ep):
-        print("-----------------------------------")
+        # print("-----------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         total_rewards_ep={agent : 0 for agent in env.possible_agents}
@@ -124,6 +134,7 @@ for _ in range(1):
     observations, infos = env.reset()
     qtables = make_QTables(env,gamma)
     qtables = train(env,1000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+    print(qtables)
     mean_reward, std_reward = evaluate(env, 100, 100, qtables)
     print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
     print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")

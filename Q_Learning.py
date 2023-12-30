@@ -53,7 +53,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
     total_rewards=[]
     for _ in range(n_train_ep):
         ep_rewards={agent:0 for agent in env.possible_agents}
-        print("-----------------------------------------")
+        # print("-----------------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         for agent in env.agents:  
@@ -91,7 +91,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
 def evaluate(env, max_steps, n_eval_ep, qtables):
     ep_rewards=[]
     for _ in range(n_eval_ep):
-        print("-----------------------------------")
+        # print("-----------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         total_rewards_ep={agent : 0 for agent in env.possible_agents}

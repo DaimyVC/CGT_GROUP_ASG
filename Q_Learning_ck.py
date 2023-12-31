@@ -53,15 +53,19 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
     # Update: True 
     status_per_agent = {a: True for a in env.possible_agents}
     a_update_per_agent = {a: None for a in env.possible_agents}
+    total_rewards=[]
     prev_action_per_agent = a_update_per_agent = {a: None for a in env.possible_agents}
     counts=make_CountTables(env)
     for _ in range(n_train_ep):
+        ep_rewards={agent:0 for agent in env.possible_agents}
         print("-----------------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         for agent in env.agents:  
             actions[agent]=env.action_space().sample()
         observations, rewards, terminations, _, _ = env.step(actions)
+        for agent in env.agents:
+            ep_rewards[agent]+=rewards[agent]
         for _ in range(max_steps):
             actions={agent : None for agent in env.possible_agents}
             for agent in env.agents:
@@ -83,6 +87,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
             for agent in env.possible_agents:
                 new_state=new_observations[agent]["state"]
                 if(actions[agent]!=None):
+                    ep_rewards[agent]+=rewards[agent]
                     
                     if status_per_agent[agent]:
                         # Save previous state for next iteration
@@ -116,7 +121,8 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
             # Our state is the new state
             observations = new_observations
         epsilon=max(epsilon-decay, min_epsilon)
-    return qtables
+        total_rewards.append(np.mean([i/max_steps for i in list(ep_rewards.values())]))
+    return qtables,total_rewards
 
 def evaluate(env, max_steps, n_eval_ep, qtables):
     ep_rewards=[]
@@ -157,7 +163,9 @@ for _ in range(1):
     env = parallel_env()
     observations, infos = env.reset()
     qtables = make_QTables(env,gamma)
-    qtables = train(env,10000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+    qtables,total_reward = train(env,10000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+    print(total_reward)
+    break
     mean_reward, std_reward = evaluate(env, 100, 100, qtables)
     print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
     print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")

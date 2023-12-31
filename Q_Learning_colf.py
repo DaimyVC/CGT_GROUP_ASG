@@ -4,6 +4,18 @@ import random
 from tqdm import tqdm
 
 
+def calculate_correct_learning_rate(reward,action,state,ptable,stable,alfa,adecay,count,non_stationary_multiplier):
+    abs_difference = abs(reward - ptable[tuple(state)+tuple([action])])
+    alfa_non_stationary = alfa
+    alfa_stationary = non_stationary_multiplier*alfa
+
+    if abs_difference > stable[tuple(state)+tuple([action])]:
+        learning_rate = alfa_non_stationary/(1+adecay*count)
+    else:
+        learning_rate = alfa_stationary/(1+adecay*count)
+    return abs_difference,learning_rate
+
+
 def makeEmptyTables(env):
     actions=env.action_space().n
     states=env.observation_space().n
@@ -105,16 +117,12 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,ptabl
                     count=counts[env.agent_name_mapping[agent]][tuple(state)][actions[agent]]
                     reward = rewards[agent]
                     action = actions[agent]
-                    abs_difference = abs(reward - ptable[tuple(state)+tuple([action])])
-                    alfa_non_stationary = alfa
-                    alfa_stationary = non_stationary_multiplier*alfa
-                    if abs_difference > stable[tuple(state)+tuple([action])]:
-                       learning_rate = alfa_non_stationary/(1+adecay*count)
-                    else:
-                       learning_rate = alfa_stationary/(1+adecay*count)
-                    
+
+
+                    abs_diff,learning_rate = calculate_correct_learning_rate(reward,action,state,ptable,stable,alfa,adecay,count,non_stationary_multiplier)
+                                        
                     ptable = update_PTables(tuple(state),actions[agent],ptable,rewards[agent],lamb)
-                    stable = update_STables(tuple(state),actions[agent],stable,abs_difference,lamb)
+                    stable = update_STables(tuple(state),actions[agent],stable,abs_diff,lamb)
                     qtable=update_QTables(tuple(state),actions[agent],rewards[agent],tuple(new_state),qtable,learning_rate,gamma)
 
                     ptables[env.agent_name_mapping[agent]]=ptable

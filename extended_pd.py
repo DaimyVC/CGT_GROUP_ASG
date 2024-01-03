@@ -42,7 +42,7 @@ def raw_env(render_mode=None):
 class parallel_env(ParallelEnv):
     metadata = {"render_modes": ["human"], "name": "env_1"}
 
-    def __init__(self, render_mode=None, num_agents=3, num_moves=3, k=0.5):
+    def __init__(self, render_mode=None, num_agents=3, num_moves=3, k=2/3):
         """
         The init method takes in environment arguments and should define the following attributes:
         - possible_agents

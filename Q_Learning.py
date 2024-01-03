@@ -122,18 +122,18 @@ def evaluate(env, max_steps, n_eval_ep, qtables):
 
     return mean_reward, std_reward
 
-for _ in range(1):
-    gamma=0.95
-    alfa=0.01
-    adecay=0.0001
-    env = parallel_env()
-    observations, infos = env.reset()
-    qtables = make_QTables(env,gamma)
-    qtables,tot_rew = train(env,1000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
-    print(tot_rew)
-    break
-    mean_reward, std_reward = evaluate(env, 100, 100, qtables)
-    print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
-    print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")
-    print(f"Mean_reward={mean_reward[2]:.2f} +/- {std_reward[2]:.2f}")
-    break
+#for _ in range(1):
+#    gamma=0.95
+#    alfa=0.01
+#    adecay=0.0001
+#    env = parallel_env()
+#    observations, infos = env.reset()
+#    qtables = make_QTables(env,gamma)
+#    qtables,tot_rew = train(env,1000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+#    print(tot_rew)
+#    break
+#    mean_reward, std_reward = evaluate(env, 100, 100, qtables)
+#    print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
+#    print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")
+#    print(f"Mean_reward={mean_reward[2]:.2f} +/- {std_reward[2]:.2f}")
+#    break

@@ -176,28 +176,21 @@ def evaluate(env, max_steps, n_eval_ep, qtables):
     std_reward = np.std(ep_rewards,axis=0)
     return mean_reward, std_reward
 
-for _ in range(1):
-    gamma=0.95
-    alfa=0.01
-    adecay=0.0001
-    lamb = 0.1
-    env = parallel_env()
-    observations, infos = env.reset()
-    qtables = make_QTables(env,gamma) 
-    stables = makeEmptyTables(env)
-    ptables = makeEmptyTables(env)
-    qtables,total_reward = train(env,10000,0,0.2,0.000006,100,qtables,ptables,stables,gamma,alfa,adecay,4,lamb)
-    print(total_reward)
-    break
-    mean_reward, std_reward = evaluate(env, 100, 100, qtables)
-    print("qtables")
-    print(qtables)
-    # print("ptables")
-    # print(ptables)
-    # print("stables")
-    # print(stables)
-    print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
-    print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")
-    print(f"Mean_reward={mean_reward[2]:.2f} +/- {std_reward[2]:.2f}")
-
-    break
+#for _ in range(1):
+#    gamma=0.95
+#    alfa=0.01
+#    adecay=0.0001
+#    lamb = 0.1
+#    env = parallel_env()
+#    observations, infos = env.reset()
+#    qtables = make_QTables(env,gamma) 
+#    stables = makeEmptyTables(env)
+#    ptables = makeEmptyTables(env)
+#    qtables,total_reward = train(env,10000,0,0.2,0.000006,100,qtables,ptables,stables,gamma,alfa,adecay,4,lamb)
+#    print(total_reward)
+#    break
+#    mean_reward, std_reward = evaluate(env, 100, 100, qtables)
+#    print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
+#    print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")
+#    print(f"Mean_reward={mean_reward[2]:.2f} +/- {std_reward[2]:.2f}")
+#    break

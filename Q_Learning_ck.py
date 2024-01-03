@@ -58,7 +58,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
     counts=make_CountTables(env)
     for _ in range(n_train_ep):
         ep_rewards={agent:0 for agent in env.possible_agents}
-        print("-----------------------------------------")
+        # print("-----------------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         for agent in env.agents:  
@@ -127,7 +127,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
 def evaluate(env, max_steps, n_eval_ep, qtables):
     ep_rewards=[]
     for _ in range(n_eval_ep):
-        print("-----------------------------------")
+        # print("-----------------------------------")
         observations,_=env.reset()
         actions={agent : None for agent in env.possible_agents}
         total_rewards_ep={agent : 0 for agent in env.possible_agents}
@@ -156,19 +156,19 @@ def evaluate(env, max_steps, n_eval_ep, qtables):
     std_reward = np.std(ep_rewards,axis=0)
     return mean_reward, std_reward
 
-for _ in range(1):
-    gamma=0.95
-    alfa=0.01
-    adecay=0.0001
-    env = parallel_env()
-    observations, infos = env.reset()
-    qtables = make_QTables(env,gamma)
-    qtables,total_reward = train(env,10000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
-    print(total_reward)
-    break
-    mean_reward, std_reward = evaluate(env, 100, 100, qtables)
-    print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
-    print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")
-    print(f"Mean_reward={mean_reward[2]:.2f} +/- {std_reward[2]:.2f}")
-    print(qtables)
-    break
+#for _ in range(1):
+#    gamma=0.95
+#    alfa=0.01
+#    adecay=0.0001
+#    env = parallel_env()
+#    observations, infos = env.reset()
+#    qtables = make_QTables(env,gamma)
+#    qtables,total_reward = train(env,10000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+#    print(total_reward)
+#    break
+#    mean_reward, std_reward = evaluate(env, 100, 100, qtables)
+#    print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
+#    print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")
+#    print(f"Mean_reward={mean_reward[2]:.2f} +/- {std_reward[2]:.2f}")
+#    print(qtables)
+#    break

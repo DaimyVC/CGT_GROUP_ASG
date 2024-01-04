@@ -18,7 +18,7 @@ def make_QTables(env,gamma):
     states=env.observation_space().n
     beginq = tuple(states for _ in env.possible_agents)
     max_rew=((env.utility_per_agent*(len(env.possible_agents)-1))/len(env.possible_agents))/((actions-1)*(1-env.k))
-    qtable=np.full((beginq+tuple([actions])), max_rew/gamma)
+    qtable=np.full((beginq+tuple([actions])), max_rew/(1-gamma))
     qtables =[qtable.copy() for _ in env.possible_agents]
     return qtables
 

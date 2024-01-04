@@ -7,7 +7,7 @@ def make_QTables(env,gamma):
     states=env.observation_space().n
     beginq = tuple(states for _ in env.possible_agents)
     max_rew=((env.utility_per_agent*(len(env.possible_agents)-1))/len(env.possible_agents))/((actions-1)*(1-env.k))
-    qtable=np.full((beginq+tuple([actions])), max_rew/gamma)
+    qtable=np.full((beginq+tuple([actions])), max_rew/(1-gamma))
     qtables =[qtable.copy() for _ in env.possible_agents]
     return qtables
 
@@ -21,7 +21,6 @@ def make_CountTables(env):
 
 def update_QTables(state,action,reward,new_state,qtable,alfa,gamma):
     qtable[state+tuple([action])] = (1-alfa)*qtable[state+tuple([action])] + alfa*(reward+gamma*np.max(qtable[new_state]))
-    
     return qtable
 
 def epsilon_greedy(env, qtable, state, epsilon):
@@ -122,16 +121,16 @@ def evaluate(env, max_steps, n_eval_ep, qtables):
 
     return mean_reward, std_reward
 
-#for _ in range(1):
-#    gamma=0.95
-#    alfa=0.01
-#    adecay=0.0001
-#    env = parallel_env()
-#    observations, infos = env.reset()
-#    qtables = make_QTables(env,gamma)
-#    qtables,tot_rew = train(env,1000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
-#    print(tot_rew)
-#    break
+for _ in range(1):
+    gamma=0.95
+    alfa=0.01
+    adecay=0.0001
+    env = parallel_env()
+    observations, infos = env.reset()
+    qtables = make_QTables(env,gamma)
+    qtables,tot_rew = train(env,1000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+    print(tot_rew)
+    break
 #    mean_reward, std_reward = evaluate(env, 100, 100, qtables)
 #    print(f"Mean_reward={mean_reward[0]:.2f} +/- {std_reward[0]:.2f}")
 #    print(f"Mean_reward={mean_reward[1]:.2f} +/- {std_reward[1]:.2f}")

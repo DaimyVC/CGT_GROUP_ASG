@@ -54,7 +54,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
     status_per_agent = {a: True for a in env.possible_agents}
     a_update_per_agent = {a: None for a in env.possible_agents}
     total_rewards=[]
-    prev_action_per_agent = a_update_per_agent = {a: None for a in env.possible_agents}
+    prev_action_per_agent = {a: None for a in env.possible_agents}
     counts=make_CountTables(env)
     for _ in range(n_train_ep):
         ep_rewards={agent:0 for agent in env.possible_agents}

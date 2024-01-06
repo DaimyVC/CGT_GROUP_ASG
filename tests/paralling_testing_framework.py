@@ -16,7 +16,9 @@ trials = 1
 
 implementations = [
     "Q_Learning",
+    "Q_Learning_ck",
     "Q_Learning_colf",
+    "Q_Learning_CK_COLF"
 ]
 
 
@@ -26,7 +28,7 @@ params={
     "gamma"         : 0.95     ,
     "adecay"        : 0.0001   ,  
     "lamb"          : 0.1      ,  
-    "n_episode"     : 5*(10**4),  
+    "n_episode"     : 10000,  
     "epsilon_decay" : 0.00006  , 
     "max_steps"     : 100      ,
     "k"             : 2/3      

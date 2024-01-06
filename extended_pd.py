@@ -7,7 +7,7 @@ import random
 from pettingzoo import ParallelEnv
 from pettingzoo.utils import parallel_to_aec, wrappers
 
-NUM_ITERS=100
+NUM_ITERS=10**6
 
 
 def env(render_mode=None):
@@ -42,7 +42,7 @@ def raw_env(render_mode=None):
 class parallel_env(ParallelEnv):
     metadata = {"render_modes": ["human"], "name": "env_1"}
 
-    def __init__(self, render_mode=None, num_agents=3, num_moves=3, k=2/3):
+    def __init__(self, render_mode=None, num_agents=3, num_moves=3, k=1/3):
         """
         The init method takes in environment arguments and should define the following attributes:
         - possible_agents

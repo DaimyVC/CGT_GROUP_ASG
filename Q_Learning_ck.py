@@ -1,6 +1,7 @@
 from extended_pd import parallel_env
 import numpy as np
 import random
+from tqdm import tqdm
 
 def make_QTables(env,gamma):
     actions=env.action_space().n
@@ -56,7 +57,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
     total_rewards=[]
     prev_action_per_agent = {a: None for a in env.possible_agents}
     counts=make_CountTables(env)
-    for _ in range(n_train_ep):
+    for _ in tqdm(range(n_train_ep)):
         ep_rewards={agent:0 for agent in env.possible_agents}
         # print("-----------------------------------------")
         observations,_=env.reset()
@@ -83,6 +84,7 @@ def train(env, n_train_ep, min_epsilon, epsilon, decay, max_steps, qtables,gamma
                 prev_action_per_agent[agent] = actions[agent]
 
 
+            # print(actions)
             new_observations, rewards, terminations, _, _ = env.step(actions)
             for agent in env.possible_agents:
                 new_state=new_observations[agent]["state"]
@@ -156,14 +158,14 @@ def evaluate(env, max_steps, n_eval_ep, qtables):
     std_reward = np.std(ep_rewards,axis=0)
     return mean_reward, std_reward
 
-#for _ in range(1):
+# for _ in range(1):
 #    gamma=0.95
-#    alfa=0.01
+#    alfa=0.1
 #    adecay=0.0001
 #    env = parallel_env()
 #    observations, infos = env.reset()
 #    qtables = make_QTables(env,gamma)
-#    qtables,total_reward = train(env,10000,0,0.2,0.000006,100,qtables,gamma,alfa,adecay)
+#    qtables,total_reward = train(env,1000,0.1,0.2,0.00006,1000,qtables,gamma,alfa,adecay)
 #    print(total_reward)
 #    break
 #    mean_reward, std_reward = evaluate(env, 100, 100, qtables)

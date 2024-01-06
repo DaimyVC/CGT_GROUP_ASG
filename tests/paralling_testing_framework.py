@@ -28,7 +28,7 @@ params={
     "gamma"         : 0.95     ,
     "adecay"        : 0.0001   ,  
     "lamb"          : 0.1      ,  
-    "n_episode"     : 1*(10**4),  
+    "n_episode"     : 10000,  
     "epsilon_decay" : 0.00006  , 
     "max_steps"     : 100      ,
     "k"             : 2/3      
